@@ -7,3 +7,4 @@ Autonomous Task Allocation and Base Placement, or simply `ATB`, takes any arbitr
 divides the task into manageble subtasks and calculates where your industrial robot should be placed, in order to complete these tasks.  
 
 eddit
+sadfdgfhj
