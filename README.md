@@ -25,7 +25,7 @@ A more detailed example with detailed explanations on how things work can be fou
 
 ### Dependencies: 
 
-* Robot kinematics are solved with [robotics-toolbox-python](https://github.com/petercorke/robotics-toolbox-python)  
+* Robot kinematics are solved with [robotics-toolbox-python](https://github.com/petercorke/robotics-toolbox-python) and [spatialmath-python](https://github.com/petercorke/spatialmath-python)  
 * [tqdm](https://github.com/tqdm/tqdm) for cool progress bars  
 * [Pandas](https://pandas.pydata.org/docs/getting_started/install.html)
 * [Numpy](https://numpy.org/install/)
