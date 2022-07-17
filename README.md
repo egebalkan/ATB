@@ -25,4 +25,4 @@ A more detailed example with detailed explanations on how things work can be fou
 * [Matplotlib](https://matplotlib.org/stable/users/installing.html)
 * [Sklearn](https://scikit-learn.org/stable/install.html)
 * [Scipy](https://www.scipy.org/install.html)
-* [Shapely](https://pypi.org/project/Shapely/) 
+* [Shapely](https://pypi.org/project/Shapely/) for geometric calculations  
