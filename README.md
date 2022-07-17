@@ -18,7 +18,7 @@ Due to the size of the I-beams, these tasks can not be completed by one robot pl
   <img src="/images/result_2_37.png" />
 </p>
 
-`ATB` makes sure that every single task point is reached and tries to find task allocations that result in as few base placements as possible while also considering the strain on the robot arm, possible collision between the robot and the product, and also if there are more than one robot present, possible collisions between robots.   
+`ATB` makes sure that every single task point is reached and tries to find task allocations that result in as few base placements as possible while also considering the strain on the robot arm, possible collisions between the robot and the product, and also if there are more than one robot present, possible collisions between robots.   
 
 A more detailed example with detailed explanations on how things work can be found [here](ibeam_example.ipynb) 
 
