@@ -12,7 +12,8 @@ Imagine having an industrial application like this:
   <img src="/images/2_perpendicular_task.JPG" />
 </p>
 
-where you have two I-beams on which you want to do something.  Red and blue points correspond to different types of tasks(explained [here](https://github.com/egebalkan/ATB/blob/63e51b1f929570888e197cb1f5b89b54da3cdf13/ibeam_example.ipynb)).
+where you have two I-beams on which you want to perform any industrial task, such as drilling, painting, sanding, inspection etc.  This task is abstracted as points in 3D space where the end-effector of your robot needs to reach.  Red and blue points correspond to different types of tasks(explained [here](https://github.com/egebalkan/ATB/blob/63e51b1f929570888e197cb1f5b89b54da3cdf13/ibeam_example.ipynb)).  
+
 Due to the size of the I-beams, these tasks can not be completed by one robot placed in one position.  `ATB` creates a search space around the physical object(the I-beams in this case), discretizes this search space according to the positions of the task points, divides the task into smaller subtasks, calculates where your robot(or robots if you have multiple) needs to be positioned in order to complete these tasks and allocates the task points to each robot, like such:  
 <p align="center">
   <img src="/images/result_2_37.png" />
