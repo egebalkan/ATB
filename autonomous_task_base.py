@@ -1,38 +1,22 @@
 import  pandas as pd
 import  numpy  as np
-#import matplotlib.pyplot as plt
-#from   mpl_toolkits.mplot3d.art3d import Poly3DCollection
-#import matplotlib.animation as animation
-#from   matplotlib.widgets import Slider
-#import matplotlib.gridspec as gridspec
 from    scipy.spatial import distance
-#import time
-#import shapely
-#from   shapely.ops import split
 from    shapely.geometry import Polygon
 from    shapely.geometry import Point
-#from   shapely.geometry import LineString
 from    shapely.geometry import MultiPoint
 from    shapely.ops import cascaded_union
-#import copy
-#import os
 import  math
 import  itertools
 from    itertools import combinations
-#import sklearn
 from    sklearn.cluster import KMeans
 from    sklearn.preprocessing import StandardScaler
 from    sklearn.cluster import OPTICS#, cluster_optics_dbscan
 from    sklearn.metrics import silhouette_score #,silhouette_samples
-#import  winsound
 import  roboticstoolbox as rtb
 from    spatialmath import SE3
 import  sys
 from    tqdm import tqdm
-#from   time import sleep
 import  random
-
-#%%
 
 class atb():
     
@@ -59,10 +43,8 @@ class atb():
 #    last two entries are added after the algoritm runs and are 
 #    used for performance evaluation. the rest are defined and
 #    added in the beginning.
-
     
     def KMeansClustering(point_data,k):
-        
 #       takes the data set and number of clusters as inputs
 #       returns clusters, centroids thereof and silhouette score
 #       of the clustering
@@ -72,7 +54,6 @@ class atb():
     
         #documentation of the sklean.KMEANS and 
         #example https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
-        
         
         #initialize empty clusters and centroids
         clusters = {}
@@ -93,17 +74,13 @@ class atb():
             centroids[k] = kmeans.cluster_centers_
         
         silhouette_avg = silhouette_score(X, y_kmeans)
-        
         return centroids,clusters,silhouette_avg
-    
 
-#%%
     def search_space(inputs):
         bounding_box1 = inputs[6]
         bounding_box2 = inputs[7]
         buffer_out    = inputs[2]
         resolution    = inputs[0]
-        
         
         #create search space and place possible base positions
         bb =[]
@@ -158,7 +135,6 @@ class atb():
         min_out_y = min(np.array(common_ss.exterior.coords)[:,1])
         max_out_y = max(np.array(common_ss.exterior.coords)[:,1])
         
-        
         lat_x = np.linspace(min_out_x, max_out_x,resolution)
         lat_y = np.linspace(min_out_y, max_out_y,resolution)
         
@@ -166,7 +142,6 @@ class atb():
         ss = points.intersection(common_ss)
         
         return ss, inner_bound1, inner_bound2, common_ss_exterior, points
-#%%
 
     def coverage_task(inputs, n, ss):
         
@@ -177,8 +152,7 @@ class atb():
 #        calculates and returns possible base placements for the 
 #        coverage task, clusters, centroids thereof, and search spaces
 #        around individual centroids as outputs using k-means clustering.
-        
-        
+               
         buffer_out          = inputs[2]
         point_data_coverage = inputs[4]
         agv                 = inputs[5]
@@ -191,7 +165,6 @@ class atb():
             centroids_kmeans[i] = results_kmeans[0][0][n][i]   
             clusters_kmeans[i]  = results_kmeans[0][1][i] 
             
-        #centroids_ss : search space for each centroid
         centroids_ss_kmeans = {}
         for i in range(len(centroids_kmeans)):
             centroids_ss_kmeans[i] = Point(centroids_kmeans[i][0],centroids_kmeans[i][1], 0).buffer(buffer_out+600)
@@ -210,9 +183,6 @@ class atb():
     
         return pbp_kmeans_coords, centroids_kmeans, clusters_kmeans, centroids_ss_kmeans
 
-        
-    
-    #%%
     def discrete_task(inputs, min_samples, ss):
         
 #       takes the outer bound of buffer, data set, agv height,
@@ -235,7 +205,6 @@ class atb():
         X = StandardScaler().fit_transform(X)
         
         clust = OPTICS(min_samples).fit(X)
-        
         labels = clust.labels_[clust.ordering_]
         
         clusters_optics = {}  #initialize empty optics cluster dict
@@ -294,11 +263,8 @@ class atb():
         reachability_vector = {}
         manipulability_val = []
         manipulability_task = {}
-        
-#        for t in tqdm(range(100)):
+
         for i in tqdm(range(len(rel))):   #tqdm is used for creating a progress bar, can be safely removed 
-#            perc =  i/len(rel)*100      
-#            print("Progress: ",str(float('%.3g' %perc)),"%") 
             for j in range(len(rel[i])):
                 if distance.euclidean([0,0,0],rel[i][j])>robot_max_reach:
                     sol = False
@@ -342,7 +308,6 @@ class atb():
                 pbp_combi.append(combo)
             total_checks += len(pbp_combi)
             print("There are "+str(len(pbp_combi))+ " of them")
-            
             a = {} 
             valid_combos = []
             incomplete_combos = {}
@@ -484,7 +449,6 @@ class atb():
         total_score = float( '%.5g' % (score_coverage + score_discrete))
 
         performance_data = []
-#        performance_data.append([num_task_points,search_space_resolution,total_time,percentage_reached,num_robots])
         performance_data.append(num_task_points)
         performance_data.append(search_space_resolution)
         performance_data.append(total_time)
@@ -513,14 +477,10 @@ class atb():
             else:
                 is_reachable.append(False)
                 not_reachable.append(i)
-        if all(is_reachable)==False:
-            #winsound.Beep(400,1000) 
-            print("\nWARNING: NOT ALL POINTS ARE REACHABLE!\n")
-            #winsound.Beep(600,1000) 
+        if all(is_reachable)==False: 
+            print("\nWARNING: NOT ALL POINTS ARE REACHABLE!\n") 
             print(str(len(not_reachable)), " points are not reachable:")
-            #winsound.Beep(400,1000) 
             print(not_reachable)
-            #winsound.Beep(600,1000) 
             ans=input("Do you want to stop the program and reconfigure paramaters? [Y/n] \n")
             if ans == "Y":
                 sys.exit()
@@ -536,7 +496,6 @@ class atb():
 
         rel_traj = {}
         diff=[]
-        
         for i in range(len(current_combi)):
             for j in range(len(task_allocation[i])):
                 diff.append(np.subtract(task_allocation[i][j],pbp_coords[current_combi[i]])/1000)
@@ -691,7 +650,6 @@ class atb():
         return verts,bounding_box,task
     
     def search(resolution,bounding_boxes):
-        
 #       creates a search space around the bounding boxes created by beam_generator()
         
         pgn = []
@@ -739,7 +697,4 @@ class atb():
         ss = ss.difference(cascaded_union(dilated_ins))
         pgn = cascaded_union(pgn)
 
-        return ss,inners,outers,pgn
-#%%
-
-                    
+        return ss,inners,outers,pgn                 
