@@ -17,6 +17,7 @@ Due to the size of the I-beams, these tasks can not be completed from one positi
 <p align="center">
   <img src="/images/result_2_37.png" />
 </p>
+
 `ATB` makes sure that every single task point is reached and tries to find task allocations that result in as few base placements as possible.   
 
 A more detailed example with detailed explanations on how things work can be found [here](ibeam_example.ipynb) 
