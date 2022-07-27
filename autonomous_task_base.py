@@ -459,9 +459,8 @@ class atb:
             for j in range(len(task_allocation_discrete[i])):
                 all_reachable_points_discrete.append(task_allocation_discrete[i][j])
 
-        perc = (
-            len(all_reachable_points_discrete) + len(all_reachable_points_coverage)
-        ) / (len(point_data_coverage) + len(point_data_discrete))
+        perc = (len(all_reachable_points_discrete) + len(all_reachable_points_coverage)
+           )  / (len(point_data_coverage) + len(point_data_discrete))
         percentage_reached = float("%.2g" % perc) * 100
         num_robots = len(task_allocation_discrete) + len(task_allocation_coverage)
 
@@ -783,3 +782,75 @@ class atb:
         pgn = cascaded_union(pgn)
 
         return ss, inners, outers, pgn
+    def ibeam_perpendicular_product(product1, product2):
+        
+        df_product1 = pd.read_csv(product1, header=None)
+        dropped_product1 = df_product1[[0, 2, 1]]
+        point_data_product1 = dropped_product1.values.tolist()
+        
+        df_product2 = pd.read_csv(product2, header=None)
+        dropped_product2 = df_product2[[0, 2, 1]]
+        point_data_product2 = dropped_product2.values.tolist()
+
+        Z1 = np.array(point_data_product1)
+        Z2 = np.array(point_data_product2)
+        verts1 = [
+            [Z1[0], Z1[1], Z1[2], Z1[3]],
+            [Z1[4], Z1[5], Z1[6], Z1[7]],
+            [Z1[8], Z1[9], Z1[10], Z1[11]],
+            [Z1[12], Z1[13], Z1[14], Z1[15]],
+            [Z1[16], Z1[17], Z1[18], Z1[19]],
+            [Z1[20], Z1[21], Z1[22], Z1[23]],
+            [Z1[20], Z1[21], Z1[10], Z1[11]],
+            [Z1[8], Z1[9], Z1[22], Z1[23]],
+            [Z1[12], Z1[15], Z1[2], Z1[1]],
+            [Z1[13], Z1[14], Z1[3], Z1[0]],
+            [Z1[21], Z1[22], Z1[9], Z1[10]],
+            [Z1[20], Z1[23], Z1[8], Z1[11]],
+            [Z1[0], Z1[1], Z1[12], Z1[13]],
+            [Z1[2], Z1[3], Z1[14], Z1[15]],
+            [Z1[4], Z1[17], Z1[18], Z1[7]],
+            [Z1[5], Z1[6], Z1[19], Z1[16]],
+        ]
+        
+        verts2 = [
+            [Z2[0], Z2[1], Z2[2], Z2[3]],
+            [Z2[4], Z2[5], Z2[6], Z2[7]],
+            [Z2[8], Z2[9], Z2[10], Z2[11]],
+            [Z2[12], Z2[13], Z2[14], Z2[15]],
+            [Z2[16], Z2[17], Z2[18], Z2[19]],
+            [Z2[20], Z2[21], Z2[22], Z2[23]],
+            [Z2[4], Z2[7], Z2[18], Z2[17]],
+            [Z2[16], Z2[19], Z2[6], Z2[5]],
+            [Z2[0], Z2[1], Z2[12], Z2[13]],
+            [Z2[0], Z2[3], Z2[14], Z2[13]],
+            [Z2[12], Z2[15], Z2[2], Z2[1]],
+            [Z2[9], Z2[10], Z2[21], Z2[22]],
+            [Z2[8], Z2[11], Z2[20], Z2[23]],
+            [Z2[8], Z2[9], Z2[22], Z2[23]],
+            [Z2[10], Z2[11], Z2[20], Z2[21]],
+        ]
+        
+        bounding_box1 = []
+        line1 = np.linspace(Z1[9], Z1[10], 10)
+        line2 = np.linspace(Z1[10], Z1[21], 30)
+        line3 = np.linspace(Z1[21], Z1[22], 10)
+        line4 = np.linspace(Z1[22], Z1[9], 30)
+        
+        bounding_box1.append(line1)
+        bounding_box1.append(line2)
+        bounding_box1.append(line3)
+        bounding_box1.append(line4)
+        
+        bounding_box2 = []
+        line5 = np.linspace(Z2[9], Z2[10], 10)
+        line6 = np.linspace(Z2[10], Z2[21], 30)
+        line7 = np.linspace(Z2[21], Z2[22], 10)
+        line8 = np.linspace(Z2[22], Z2[9], 30)
+        
+        bounding_box2.append(line5)
+        bounding_box2.append(line6)
+        bounding_box2.append(line7)
+        bounding_box2.append(line8)
+        
+        return point_data_product1, point_data_product2, verts1, verts2 , bounding_box1, bounding_box2
