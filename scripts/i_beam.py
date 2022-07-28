@@ -944,3 +944,5 @@ allocation_plot.text(4000,7400,0, "coverage score: " + str(perf[5]))
 allocation_plot.text(4000,7100,0,"discrete score: "+str(perf[6]))
 allocation_plot.text(4000,6800,0,"total score: "+str(perf[7]))
 plt.show()
+#%%
+

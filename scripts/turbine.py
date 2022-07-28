@@ -15,21 +15,12 @@ import copy
 import os
 from   itertools import combinations
 import sys
-#from tqdm import tqdm
-#import csv
+from tqdm import tqdm
 import roboticstoolbox as rtb
-#import telegram_send
-#from stl import mesh
-#from mpl_toolkits import mplot3d
 from   shapely.geometry import LineString
 import shapely
-#import collections
-#from shapely.ops import split
-#from   shapely.geometry import Polygon
 from   shapely.geometry import Point
-#from   shapely.geometry import LineString
 from   shapely.geometry import MultiPoint
-#from shapely.ops import cascaded_union
 sys.path.append(r"D:\GIT STUFF\task-clustering")
 from autonomous_task_base import atb
 
