@@ -443,8 +443,8 @@ class atb:
         resolution = inputs[0]
         point_data_discrete = inputs[3]
         point_data_coverage = inputs[4]
-        task_allocation_discrete = inputs[6]
-        task_allocation_coverage = inputs[7]
+        task_allocation_discrete = inputs[8]
+        task_allocation_coverage = inputs[9]
 
         num_task_points = len(point_data_discrete) + len(point_data_coverage)
         search_space_resolution = resolution**2
@@ -855,28 +855,3 @@ class atb:
         
         return point_data_product1, point_data_product2, verts1, verts2 , bounding_box1, bounding_box2
     
-    def calculate_torques(valid_combos, reachability_vector,point_data, robot, pbp_coords):
-        valid_combo_torques = []
-        for i in tqdm(range(len(valid_combos))):
-            try:
-                current_combi = []
-                for j in valid_combos[i]:
-                    current_combi.append(list(reachability_vector.keys())[j])
-                task_allocation = atb.allocation(current_combi, reachability_vector, point_data)
-                valid_combo_torques.append(atb.torques(current_combi, task_allocation, robot, pbp_coords, 0))
-    #                except BaseException as e:
-    #                    excepName = type(e).__name__
-    #                    print(excepName)
-    #                    valid_combo_torques.append(9999)
-    #                    continue
-            except KeyError:
-                valid_combo_torques.append(9999)
-                continue
-            except UnboundLocalError as ule:
-                print(ule)
-                valid_combo_torques.append(9999)
-                continue
-            except KeyboardInterrupt as ki:
-                print(ki)
-                sys.exit()
-            return valid_combo_torques

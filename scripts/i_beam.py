@@ -13,7 +13,7 @@ import os
 from itertools import combinations
 import sys
 import roboticstoolbox as rtb
-
+from tqdm import tqdm
 #SET YOU PATH TO ACCESS TASK FILES AND SAVE RESULTS!!
 folder = r'D:\\CODE\\projects\\ATB'
 
@@ -180,7 +180,7 @@ resolution = start_res
 time_start = time.time()
 print("------------------------------------------------------------")
 print("\nRESOLUTION:", resolution, "X", resolution, "=", resolution**2)
-# list of inputs saved for later
+#%% list of inputs saved for later
 inputs = []
 inputs.append(resolution)  # 0
 inputs.append(buffer_in)  # 1
@@ -190,7 +190,7 @@ inputs.append(point_data_coverage)  # 4
 inputs.append(agv)  # 5
 inputs.append(bounding_box1)  # 6
 inputs.append(bounding_box2)  # 7
-
+#%%
 #%CREATE SEARCH SPACE
 ss_results = atb.search_space(inputs)
 
@@ -212,14 +212,6 @@ pbp_coverage_coords = coverage_task_results[0]
 centroids_coverage = coverage_task_results[1]
 clusters_coverage = coverage_task_results[2]
 centroids_ss_kmeans = coverage_task_results[3]
-#%
-pbp_kmeans = []
-final_ss_kmeans = {}
-for i in range(len(centroids_ss_kmeans)):
-    final_ss_kmeans[i] = centroids_ss_kmeans[i].intersection(ss)
-for i in range(len(final_ss_kmeans) - 1):
-    pbp_kmeans = final_ss_kmeans[i].union(final_ss_kmeans[i + 1])
-#%
 
 ##%DISCRETE TASK
 discrete_task_results = atb.discrete_task(inputs, 2, ss)
@@ -464,6 +456,7 @@ if len(valid_combos_discrete) != 0:
     print("Picking the best combination")
     valid_combo_distances = []
     valid_combo_manipulability = []
+    
     for k in range(len(valid_combos_discrete)):
         distances = []
         manipulability_sums = []
@@ -481,33 +474,51 @@ if len(valid_combos_discrete) != 0:
 
         valid_combo_manipulability.append(np.average(manipulability_sums))
         valid_combo_distances.append(np.average(distances))
-
+            
+    if torque_prompt == 'y':
         valid_combo_torques = []
-        if torque_prompt == 'y':
-            valid_combo_torques = atb.calculate_torques(valid_combos_discrete, reachability_vector_discrete,
-                                                        point_data_discrete, robot_discrete, pbp_discrete_coords)
-            S_discrete= []
-            for i in range(len(valid_combos_discrete)):
+        for i in tqdm(range(len(valid_combos_discrete))):
+            try:
+                current_combi = []
+                for j in valid_combos_discrete[i]:
+                    current_combi.append(list(reachability_vector_discrete.keys())[j])
+                task_allocation = atb.allocation(current_combi, reachability_vector_discrete, point_data_discrete)
+                valid_combo_torques.append(atb.torques(current_combi, task_allocation, robot_discrete, pbp_discrete_coords, 0))
+        
+            except KeyError:
+                valid_combo_torques.append(9999)
+                continue
+            except UnboundLocalError as ule:
+                print(ule)
+                valid_combo_torques.append(9999)
+                continue
+            except KeyboardInterrupt as ki:
+                print(ki)
+                sys.exit()
+                
+    if torque_prompt == 'y':
+        S_discrete= []
+        for i in range(len(valid_combos_discrete)):
+            S_discrete.append(
+                    [
+                        100 / len(valid_combos_discrete[i]),
+                        valid_combo_distances[i],
+                        valid_combo_manipulability[i],
+                        valid_combo_torques[i]
+                    ]
+                )
+            W_discrete = np.array([100, 0.1, 5, 0.01])
+    else:
+        S_discrete = []
+        for i in range(len(valid_combos_discrete)):
                 S_discrete.append(
-                        [
-                            100 / len(valid_combos_discrete[i]),
-                            valid_combo_distances[i],
-                            valid_combo_manipulability[i],
-                            valid_combo_torques[i]
-                        ]
-                    )
-                W_discrete = np.array([100, 0.1, 5, 1])
-        else:
-            S_discrete = []
-            for i in range(len(valid_combos_discrete)):
-                    S_discrete.append(
-                        [
-                            100 / len(valid_combos_discrete[i]),
-                            valid_combo_distances[i],
-                            valid_combo_manipulability[i],
-                        ]
-                    )
-            W_discrete = np.array([100, 0.1, 5])
+                    [
+                        100 / len(valid_combos_discrete[i]),
+                        valid_combo_distances[i],
+                        valid_combo_manipulability[i],
+                    ]
+                )
+        W_discrete = np.array([100, 0.1, 5])
                 
     scores_discrete[resolution] = S_discrete
     S_discrete = np.array(S_discrete)
@@ -515,12 +526,11 @@ if len(valid_combos_discrete) != 0:
     best = valid_combos_discrete[np.argmax(weighted_sum_discrete)]
     best_score_discrete = float("%.4g" % max(weighted_sum_discrete)) / 100
     # valid_combos
-else:
+if len(valid_combos_discrete) == 0:
     best = pbp_combi_discrete[
         min(incomplete_combos_discrete, key=incomplete_combos_discrete.get)
     ]
     best_score_discrete = "incomplete"
-#
 
 final_combi_discrete = []
 for i in best:
@@ -531,13 +541,14 @@ print(final_combi_discrete)
 task_allocation_discrete = atb.allocation(
     final_combi_discrete, reachability_vector_discrete, point_data_discrete
 )
+#%%
 inputs.append(task_allocation_discrete)
-
+#%%
 final_bases_discrete = {}
 for i in range(len(final_combi_discrete)):
     final_bases_discrete[i] = pbp_discrete_coords[final_combi_discrete[i]]
-    
-# pick best combo
+
+#%% pick best combo
 print("Picking the best combination\n")
 if len(valid_combos_coverage) != 0:
     goal = 100
@@ -576,8 +587,27 @@ if len(valid_combos_coverage) != 0:
         valid_combo_manipulability.append(np.average(manipulability_sums))
 
     if torque_prompt == 'y':
-        valid_combo_torques = atb.calculate_torques(valid_combos_coverage, reachability_vector_coverage,
-                                                point_data_coverage, robot_coverage, pbp_coverage_coords)
+        valid_combo_torques = []
+        for i in tqdm(range(len(valid_combos_coverage))):
+            try:
+                current_combi = []
+                for j in valid_combos_coverage[i]:
+                    current_combi.append(list(reachability_vector_coverage.keys())[j])
+                task_allocation = atb.allocation(current_combi, reachability_vector_coverage, point_data_coverage)
+                valid_combo_torques.append(atb.torques(current_combi, task_allocation, robot_coverage, pbp_coverage_coords, 0))
+        
+            except KeyError:
+                valid_combo_torques.append(9999)
+                continue
+            except UnboundLocalError as ule:
+                print(ule)
+                valid_combo_torques.append(9999)
+                continue
+            except KeyboardInterrupt as ki:
+                print(ki)
+                sys.exit()
+
+    if torque_prompt == 'y': 
         S_coverage = []
         for i in range(len(valid_combos_coverage)):
             S_coverage.append(
@@ -589,7 +619,7 @@ if len(valid_combos_coverage) != 0:
                     valid_combo_torques[i]
                 ]
             )
-        W_coverage = np.array([100, 0.1, 0.001, 5, 1])
+        W_coverage = np.array([100, 0.1, 0.001, 5, 0.01])
     else:
         S_coverage = []
         for i in range(len(valid_combos_coverage)):
@@ -609,12 +639,12 @@ if len(valid_combos_coverage) != 0:
     weighted_sum_coverage = np.matmul(S_coverage, W_coverage)
     best = valid_combos_coverage[np.argmax(weighted_sum_coverage)]
     best_score_coverage = float("%.4g" % max(weighted_sum_coverage)) / 100
-    # valid_combos
-else:
+    
+if len(valid_combos_coverage) == 0:
     index_best = min(incomplete_combos_coverage, key=incomplete_combos_coverage.get)
     best = pbp_combi_coverage[index_best]
     best_score_coverage = "incomplete"
-#%
+
 final_combi_coverage = []
 for i in best:
     final_combi_coverage.append(list(reachability_vector_coverage.keys())[i])
@@ -624,14 +654,15 @@ print("\n")
 final_bases_coverage = {}
 for i in range(len(final_combi_coverage)):
     final_bases_coverage[i] = pbp_coverage_coords[final_combi_coverage[i]]
-#%
+
 print("Allocating points to the robots that can reach them\n")
 task_allocation_coverage = atb.allocation(
     final_combi_coverage, reachability_vector_coverage, point_data_coverage
 )
+#%%
 inputs.append(task_allocation_coverage)
 print("Boom we are done!")
-
+#%%
 time_end = time.time()
 total_time = float("%.4g" % (time_end - time_start))
 total_test_time = total_test_time + total_time
@@ -908,7 +939,7 @@ allocation_plot.text(
     4000, 8300, 0, "number of task points: " + str(len(point_data_coverage))
 )
 allocation_plot.text(4000,8000,0, "total time: " + str(total_time) + " seconds")
-allocation_plot.text(4000,7700,0,"# of base placements: "+str(perf[4])+"%")
+allocation_plot.text(4000,7700,0,"# of base placements: "+str(perf[4]))
 allocation_plot.text(4000,7400,0, "coverage score: " + str(perf[5]))
 allocation_plot.text(4000,7100,0,"discrete score: "+str(perf[6]))
 allocation_plot.text(4000,6800,0,"total score: "+str(perf[7]))
